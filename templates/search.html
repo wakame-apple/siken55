@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta name="robots" content="noindex,nofollow">
-        <title>検索</title>
-        <link rel="icon" href="/img/logo/favicon.ico">
-        <link rel="stylesheet" href="/css/pure-min.css">
-        <link rel="stylesheet" href="/css/grids-responsive-min.css">
-        <link rel="stylesheet" href="/css/ionicons.min.css">
-        <link rel="stylesheet" href="/css/default.css">
-        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-              <style>        
-                 .contents #searchbox {
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex,nofollow">
+    <title>検索</title>
+    <link rel="icon" href="/img/logo/favicon.ico">
+    <link rel="stylesheet" href="/css/pure-min.css">
+    <link rel="stylesheet" href="/css/grids-responsive-min.css">
+    <link rel="stylesheet" href="/css/ionicons.min.css">
+    <link rel="stylesheet" href="/css/default.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <style>
+         .contents #searchbox {
             position: fixed;
             top: 0;
             left: 0;
@@ -24,8 +25,8 @@
             justify-content: space-between;
             text-align: right;
             z-index: 20;
-	　　 color: #fffff;
-			     }
+            color: #ffffff;
+        }
         #topButton {
             position: fixed;
             bottom: 20px;
@@ -41,167 +42,473 @@
         #topButton:hover {
             background-color: #0056b3;
         }
-	    #topButton:active {
-    transform: scale(0.95);
-    background-color: #ff6347;
-}
-		        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script>
-    $(document).ready(function() {
-      // モバイル時：ハンバーガーメニューのトグル
-      $("#hamburger").click(function() {
-        $("#top-nav").toggleClass("show");
-      });
-      
-      // スクロールによるトップバーの縮小効果
-      $(window).on("scroll", function() {
-        if($(window).scrollTop() > 50) {
-          $("#top-bar").addClass("scrolled");
-        } else {
-          $("#top-bar").removeClass("scrolled");
+        #topButton:active {
+            transform: scale(0.95);
+            background-color: #ff6347;
         }
-      });
-    });
-  </script>
-                      </style>
-    </head>
-    <body>
-   <header id="top-bar">
+
+        /* vc selector style */
+        #vcSelect {
+            margin-left: 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+        }
+        #vcStatus { font-size: 0.9em; margin-left: 8px; vertical-align: middle; }
+
+        /* ---------- settings panel (overlay) ---------- */
+        /* gear moved to left-bottom */
+        .settings-toggle {
+          position: fixed;
+          left: 18px;
+          bottom: 18px;
+          z-index: 140;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          font-size: 20px;
+          color: #fff;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .settings-toggle .gear {
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          background: rgba(0,0,0,0.55);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+          color: #fff;
+          font-size: 20px;
+        }
+        .settings-panel {
+          position: fixed;
+          bottom: 78px;
+          left: 18px;
+          width: 320px;
+          max-width: calc(100% - 36px);
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 14px 40px rgba(0,0,0,0.18);
+          padding: 16px;
+          z-index: 139;
+          transform-origin: bottom left;
+          transition: transform 220ms cubic-bezier(.2,.9,.2,1), opacity 180ms ease;
+          opacity: 0;
+          transform: translateY(10px) scale(.98);
+          pointer-events: none;
+        }
+        .settings-panel.open {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+          pointer-events: auto;
+        }
+        .settings-panel h4 { margin: 0 0 10px; font-size: 1rem; color: #222; }
+        .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-row label { font-size: 0.92rem; color: #333; }
+        .settings-row .desc { font-size: 0.8rem; color: #666; display:block; margin-top:6px; }
+
+        /* ---------- toast (notification) ---------- */
+        .toast-wrap {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 150;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          pointer-events: none;
+        }
+        .toast {
+          min-width: 220px;
+          max-width: 360px;
+          background: linear-gradient(180deg,#fff,#f6f9ff);
+          border-radius: 10px;
+          padding: 12px 14px;
+          box-shadow: 0 10px 30px rgba(14,30,37,0.12);
+          color: #042a4a;
+          font-size: 0.95rem;
+          border-left: 4px solid #007BFF;
+          transform: translateX(12px) translateY(-8px) scale(.98);
+          opacity: 0;
+          transition: transform 300ms cubic-bezier(.2,.9,.2,1), opacity 240ms ease;
+          pointer-events: auto;
+          touch-action: pan-y;
+          user-select: none;
+        }
+        .toast.show { transform: translateX(0) translateY(0) scale(1); opacity: 1; }
+        .toast .title { font-weight: 700; margin-bottom: 6px; }
+        .toast .body { font-weight: 500; color: #234; }
+        .toast.dragging { transition: none; opacity: 0.95; }
+        .toast .close-x { position: absolute; top: 6px; right: 8px; font-weight: 700; color: rgba(0,0,0,0.45); cursor: pointer; }
+        .toast .hint { margin-top: 8px; font-size: 0.78rem; color: #556; display:block; }
+
+    </style>
+</head>
+<body>
+<header id="top-bar">
     <div class="navbar-logo">
       <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
     </div>
-    <!-- モバイル用ハンバーガーアイコン -->
     <div id="hamburger">&#9776;</div>
-    <!-- ナビゲーション -->
     <nav id="top-nav">
       <a href="/bbs">掲示板</a>
       <a href="/proxypage">Proxy</a>
       <a href="/others">その他</a>
       <a href="/sitsumon">回答よろ</a>
-	&emsp;
     </nav>
-  </header>
-	    <br>
-	    <div  class="no-theme">
-        <span id="dark_mode_pref" style="display: none;"></span>
-        <div class="pure-g">
-            <div class="pure-u-1 pure-u-md-2-24"></div>
-            
-            <div id="contents" class="pure-u-1 pure-u-md-20-24">
-                <div class="pure-g navbar h-box">
-                    <div class="pure-u-1 pure-u-md-12-24 searchbar">
-                        <form class="pure-form" action="/search" method="get">
-                            <fieldset>
-                                <input id="searchbox" name="q" type="search" placeholder="検索" value="{{ word }}" title="検索"  autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false">
-                            </fieldset>
-                        </form>
+</header>
+
+<!-- Settings toggle (gear) moved to left-bottom -->
+<button class="settings-toggle" id="settingsToggle" aria-label="設定を開く">
+  <span class="gear">設定⚙️</span>
+</button>
+
+<!-- Settings panel (appears above gear) -->
+<div class="settings-panel" id="settingsPanel" role="dialog" aria-hidden="true" aria-labelledby="settingsTitle">
+  <h4 id="settingsTitle">表示と再生の設定</h4>
+
+  <div class="settings-row">
+    <div>
+      <label for="vcSelectPanel">再生モード</label>
+      <div class="desc">リンク先を選択できます。設定はクッキーで保存されます。</div>
+    </div>
+    <div>
+      <select id="vcSelectPanel" style="min-width:120px;">
+        <option value="0">/watch (フルパス)</option>
+        <option value="1">/w (短縮)</option>
+        <option value="2">/ume (埋め込み)</option>
+        <option value="3">/edu (別モード)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="settings-row">
+    <div>
+      <label for="proxyToggle">サムネイルプロキシ</label>
+      <div class="desc">プロキシによるサムネイル取得をオンにします（クッキーで保存）</div>
+    </div>
+    <div>
+      <input id="proxyToggle" type="checkbox" />
+    </div>
+  </div>
+
+  <div style="padding-top:10px; text-align:right;">
+    <button id="settingsSaveBtn" style="padding:8px 12px; border-radius:6px; border:1px solid rgba(0,0,0,0.08); background:#007BFF; color:#fff; cursor:pointer;">保存</button>
+  </div>
+</div>
+
+<br>
+
+<div class="no-theme">
+    <span id="dark_mode_pref" style="display: none;"></span>
+    <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-2-24"></div>
+
+        <div id="contents" class="pure-u-1 pure-u-md-20-24">
+            <div class="pure-g navbar h-box">
+                <div class="pure-u-1 pure-u-md-12-24 searchbar">
+                    <form class="pure-form" action="/search" method="get">
+                        <fieldset>
+                            <input id="searchbox" name="q" type="search" placeholder="検索" value="{{ word }}" title="検索" autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false">
+                        </fieldset>
+                    </form>
+                </div>
+                <!-- searchbar restored to original; no selector next to it -->
+            </div>
+
+            <div class="pure-g">
+                {% for result in results %}
+                <div class="pure-u-1 pure-u-md-1-4">
+                    <div class="h-box">
+                        {% if result["type"] == "video" %}
+                        <a class="dynamic-link" href="{{ '/w' if vc == '1' else ('/ume' if vc == '2' else ('/edu' if vc == '3' else '/watch')) }}?v={{ result['id'] }}" style="width:100%">
+                            <div class="thumbnail">
+                                <img class="thumbnail" loading="lazy"
+                                     src="{% if proxy == 'True' %}/thumbnail?v={{ result['id'] }}{% else %}https://img.youtube.com/vi/{{ result['id'] }}/0.jpg{% endif %}"
+                                     onerror="document.cookie = 'proxy=True;max-age=2592000;';">
+                                <p class="length">{{ result["length"] }}</p>
+                            </div>
+                            <p dir="auto">{{ result['title'] }}</p>
+                        </a>
+
+                        <div class="video-card-row flexible">
+                            <a href="/channel/{{ result['authorId'] }}">{{ result["author"] }}</a>
+                        </div>
+
+                        <div class="video-card-row flexible">
+                            <div class="flex-left">
+                                <p class="video-data" dir="auto">{{ result["view_count_text"] }}</p>
+                                <p class="video-data" dir="auto">{{ result["published"] }}</p>
+                            </div>
+                        </div>
+
+                        {% elif result["type"] == "channel" %}
+                        <a href="/channel/{{ result["id"] }}">
+                            <center>
+                                <img loading="lazy" tabindex="-1" style="width:56.25%" src="{{ result["thumbnail"] }}">
+                            </center>
+                            <p dir="auto">{{ result["author"] }}</p>
+                        </a>
+
+                        {% elif result["type"] == "playlist" %}
+                        <a class="dynamic-link" href="/playlist?list={{ result["id"] }}">
+                            <div class="thumbnail">
+                                <img loading="lazy" tabindex="-1" class="thumbnail" src="{{ result['thumbnail'] }}">
+                                <p class="length">{{ result["count"] }}個の動画</p>
+                            </div>
+                            <p dir="auto">{{ result["title"] }}</p>
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
-		    <button id="topButton" onclick="toggleLink()">読み込み方を変更!</button>
-		 <script>
-let isWatch = true; // 現在の状態を管理するフラグ
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
-function toggleLink() {
-    const link = document.getElementById("dynamic-link");
-    const currentHref = link.getAttribute("href");
-    let message = ""; // メッセージ用の変数
+    <div class="pure-g h-box">
+        <div class="pure-u-1 pure-u-lg-1-5"></div>
+    </div>
 
-    if (isWatch) {
-        // /watch を /ume に変更
-        const updatedHref = currentHref.replace("/watch", "/ume");
-        link.setAttribute("href", updatedHref);
-        message = "埋め込みモードに変更されました！";
-    } else {
-        // /ume を /watch に戻す
-        const updatedHref = currentHref.replace("/ume", "/watch");
-        link.setAttribute("href", updatedHref);
-        message = "デフォルトモードに変更されました！";
+    <div class="pure-u-1 pure-u-lg-3-5"></div>
+    <div class="pure-u-1 pure-u-lg-1-5" style="text-align:right">
+        <a href="{{ next }}">次のページ</a>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+/* ---------- cookie helpers ---------- */
+function getCookie(name) {
+  const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? decodeURIComponent(v.pop()) : null;
+}
+function setCookie(name, value, days) {
+  const d = new Date();
+  d.setTime(d.getTime() + (days||30) * 24 * 60 * 60 * 1000);
+  const expires = "expires=" + d.toUTCString();
+  document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/";
+}
+
+/* ---------- vc path helper ---------- */
+function vcToPath(vc) {
+  switch(vc) {
+    case '1': return '/w';
+    case '2': return '/ume';
+    case '3': return '/edu';
+    default:  return '/watch';
+  }
+}
+
+/* ---------- link rewriting ---------- */
+function applyVcToLinks(vc) {
+  const targetPath = vcToPath(vc);
+  const links = document.querySelectorAll('a.dynamic-link');
+  links.forEach(a => {
+    try {
+      const url = new URL(a.getAttribute('href'), window.location.origin);
+      url.pathname = targetPath;
+      a.setAttribute('href', url.pathname + url.search);
+    } catch (e) {
+      let href = a.getAttribute('href') || '';
+      const idx = href.indexOf('?');
+      const query = idx >= 0 ? href.slice(idx) : '';
+      a.setAttribute('href', targetPath + query);
+    }
+  });
+  const st = document.getElementById('vcStatus');
+  if (st) {
+    let label = '';
+    switch(vc) {
+      case '1': label = '現在: 短縮パス /w'; break;
+      case '2': label = '現在: 埋め込み /ume'; break;
+      case '3': label = '現在: 別モード /edu'; break;
+      default:  label = '現在: フルパス /watch';
+    }
+    st.textContent = label;
+  }
+}
+
+/* ---------- DOM init ---------- */
+document.addEventListener('DOMContentLoaded', function() {
+  const serverVc = '{{ vc }}';
+  const cookieVc = getCookie('vc');
+  const vc = cookieVc !== null ? cookieVc : (serverVc || '0');
+  if (cookieVc === null) setCookie('vc', vc, 30);
+
+  // apply initial links
+  applyVcToLinks(vc);
+
+  // settings elements
+  const settingsToggle = document.getElementById('settingsToggle');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const settingsSaveBtn = document.getElementById('settingsSaveBtn');
+  const proxyToggle = document.getElementById('proxyToggle');
+  const vcSelectPanel = document.getElementById('vcSelectPanel');
+
+  // sync panel controls from cookies
+  if (vcSelectPanel) vcSelectPanel.value = vc;
+  const proxyCookie = getCookie('proxy') || ( '{{ proxy }}' === 'True' ? 'True' : null );
+  if (proxyCookie === 'True') proxyToggle.checked = true;
+
+  function openSettings() {
+    settingsPanel.classList.add('open');
+    settingsPanel.setAttribute('aria-hidden', 'false');
+  }
+  function closeSettings() {
+    settingsPanel.classList.remove('open');
+    settingsPanel.setAttribute('aria-hidden', 'true');
+  }
+
+  settingsToggle.addEventListener('click', function(e){
+    e.stopPropagation();
+    if (settingsPanel.classList.contains('open')) closeSettings();
+    else openSettings();
+  });
+
+  document.addEventListener('click', function(e){
+    if (!settingsPanel.contains(e.target) && !settingsToggle.contains(e.target)) closeSettings();
+  });
+
+  settingsSaveBtn.addEventListener('click', function(){
+    const newVc = vcSelectPanel.value;
+    setCookie('vc', newVc, 30);
+    applyVcToLinks(newVc);
+    if (proxyToggle.checked) setCookie('proxy', 'True', 30);
+    else setCookie('proxy', 'False', 30);
+    showToast('設定を保存しました!!');
+    closeSettings();
+  });
+
+  if (vcSelectPanel) {
+    vcSelectPanel.addEventListener('change', function(e){
+      const val = e.target.value;
+      const headerSel = document.getElementById('vcSelect');
+      if (headerSel) headerSel.value = val;
+    });
+  }
+
+  // autocomplete and header behaviour
+  $('#searchbox').autocomplete({
+    source: function (request, response) {
+      var url = "/suggest?keyword=" + request.term;
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", url);
+      xhr.onload = function() {
+        try { response(JSON.parse(xhr.responseText)); } catch(e) { response([]); }
+      };
+      xhr.send();
+    }, delay: 300
+  });
+
+  $("#hamburger").click(function() { $("#top-nav").toggleClass("show"); });
+  $(window).on("scroll", function() {
+    if($(window).scrollTop() > 50) { $("#top-bar").addClass("scrolled"); }
+    else { $("#top-bar").removeClass("scrolled"); }
+  });
+});
+
+/* ---------- Toast implementation (右上表示・左から右にスライドで閉じる) ---------- */
+(function(){
+  const wrap = document.getElementById('toastWrap');
+  if (!wrap) return;
+
+  function createToast(title, body, ttl = 4200) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = '<div class="close-x" aria-hidden="true">✕</div>' +
+                   '<div class="title">' + (title || '') + '</div>' +
+                   '<div class="body">' + (body || '') + '</div>' +
+                   '<span class="hint">左から右へスライドで閉じる</span>';
+    wrap.appendChild(el);
+    requestAnimationFrame(()=> el.classList.add('show') );
+
+    const timeoutId = setTimeout(()=> dismiss(el), ttl);
+
+    el.querySelector('.close-x').addEventListener('click', function(e){
+      e.stopPropagation();
+      clearTimeout(timeoutId);
+      dismiss(el);
+    });
+
+    let startX = 0;
+    let currentX = 0;
+    let dragging = false;
+
+    function onPointerDown(ev) {
+      dragging = true;
+      el.classList.add('dragging');
+      startX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
+      currentX = startX;
+      el.style.transition = 'none';
+    }
+    function onPointerMove(ev) {
+      if (!dragging) return;
+      const clientX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
+      currentX = clientX;
+      const dx = currentX - startX;
+      // only allow left->right (positive) visual
+      el.style.transform = `translateX(${Math.max(0, dx)}px)`;
+      el.style.opacity = String(Math.max(0, 1 - Math.abs(dx) / 300));
+    }
+    function onPointerUp(ev) {
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove('dragging');
+      el.style.transition = '';
+      const dx = currentX - startX;
+      if (dx > 120) dismiss(el);
+      else {
+        el.style.transform = '';
+        el.style.opacity = '';
+      }
     }
 
-    // 状態を反転
-    isWatch = !isWatch;
+    el.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+    el.addEventListener('touchstart', onPointerDown, {passive:true});
+    window.addEventListener('touchmove', onPointerMove, {passive:true});
+    window.addEventListener('touchend', onPointerUp);
 
-    // メッセージをアラートで表示
-    alert(message);
+    return el;
+  }
+
+  function dismiss(el) {
+    if (!el) return;
+    el.classList.remove('show');
+    el.style.transform = 'translateX(14px) translateY(-8px) scale(.98)';
+    el.style.opacity = '0';
+    setTimeout(()=> { try { el.remove(); } catch(e) {} }, 260);
+  }
+
+  window.showToast = function(message, title) {
+    createToast(title || '通知', message || '', 4200);
+  };
+})();
+
+/* helper exposed for compatibility */
+function toggleVc() {
+  const current = getCookie('vc') || '{{ vc }}';
+  const next = current === '1' ? '0' : '1';
+  setCookie('vc', next, 30);
+  applyVcToLinks(next);
+  showToast(next === '1' ? '/w に変更しました!!' : '/watch に変更しました!!');
+}
+function setVcMode(val) {
+  setCookie('vc', val, 30);
+  applyVcToLinks(val);
+  showToast((val === '1' ? '/w' : (val === '2' ? '/ume' : (val === '3' ? '/edu' : '/watch'))) + ' に変更しました!!');
 }
 </script>
-                    
-                <div class="pure-g">
-                    {% for result in results %}
-                    <div class="pure-u-1 pure-u-md-1-4">
-                            
-                        <div class="h-box">
-                            {% if result["type"] == "video" %}
-                                
-                            <a id="dynamic-link" href="/watch?v={{ result['id'] }}" style="width:100%">
-                                <div class="thumbnail">
-                                    <img class="thumbnail" loading="lazy" src="{% if proxy == 'True' %}/thumbnail?v={{ result['id'] }}{% else %}https://img.youtube.com/vi/{{ result['id'] }}/0.jpg{% endif %}" onerror="document.cookie = 'proxy=True;max-age=2592000;';">
-                                    <p class="length">{{ result["length"] }}</p>
-                                </div>
-                                <p dir="auto">{{ result['title'] }}</p>
-                            </a>
-                                
-                            <div class="video-card-row flexible">
-                                <a href="/channel/{{ result['authorId'] }}">{{ result["author"] }}</a>
-                            </div>
-                                
-                            <div class="video-card-row flexible">
-                                <div class="flex-left">
-                                    <p class="video-data" dir="auto">{{ result["view_count_text"] }}</p>
-                                    <p class="video-data" dir="auto">{{ result["published"] }}</p>
-                                </div>
-                            </div>
-                                
-                            {% elif result["type"] == "channel" %}
-                            <a href="/channel/{{ result["id"] }}">
-                                <center>
-                                    <img loading="lazy" tabindex="-1" style="width:56.25%" src="{{ result["thumbnail"] }}">
-                                </center>
-                                <p dir="auto">{{ result["author"] }}</p>
-                            </a>
-                                
-                            {% elif result["type"] == "playlist" %}
-                            <a style="width: 100%;" href="/playlist?list={{ result["id"] }}">
-                
-                                <div class="thumbnail">
-
-                                    <img loading="lazy" tabindex="-1" class="thumbnail" src="{{ result['thumbnail'] }}">
-                                    
-                                    <p class="length">{{ result["count"] }}個の動画</p>
-                                </div>
-                                <p dir="auto">{{ result["title"] }}</p>
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="pure-g h-box">
-            <div class="pure-u-1 pure-u-lg-1-5"></div>
-        </div>
-        
-        <div class="pure-u-1 pure-u-lg-3-5"></div>
-            <div class="pure-u-1 pure-u-lg-1-5" style="text-align:right">
-                <a href="{{ next }}">次のページ</a>
-            </div>
-        </div>
-        <script>
-            $('#searchbox').autocomplete({
-                source: function (request, response) {
-                    {
-                        var url = "/suggest?keyword=" + request.term
-                        var xhr = new XMLHttpRequest();
-                        xhr.open("GET", url);
-                        xhr.onload = function() {
-                            response(JSON.parse(xhr.responseText));
-                        }
-                        xhr.send();
-                    }
-                },delay:300
-            });
-        </script>
-    </body>
+</body>
 </html>
